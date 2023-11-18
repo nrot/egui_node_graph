@@ -623,7 +623,7 @@ where
                 responses.extend(
                     self.graph[self.node_id]
                         .user_data
-                        .output_ui(ui, self.node_id, self.graph, user_state, &param_name)
+                        .output_ui(ui, self.node_id, self.graph, user_state, &param_name, param_id)
                         .into_iter(),
                 );
 
@@ -642,8 +642,7 @@ where
             responses.extend(
                 self.graph[self.node_id]
                     .user_data
-                    .bottom_ui(ui, self.node_id, self.graph, user_state)
-                    .into_iter(),
+                    .bottom_ui(ui, self.node_id, self.graph, user_state),
             );
         });
 
