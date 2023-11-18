@@ -35,7 +35,7 @@ where
     pub fn show(
         &mut self,
         ui: &mut Ui,
-        all_kinds: impl NodeTemplateIter<Item = NodeTemplate>,
+        all_kinds: impl IntoIterator<Item = NodeTemplate>,
         user_state: &mut UserState,
     ) -> Option<NodeTemplate> {
         let background_color;
@@ -71,18 +71,17 @@ where
                 let max_height = ui.input(|i| i.screen_rect.height() * 0.5);
                 let scroll_area_width = resp.rect.width() - 30.0;
 
-                let all_kinds = all_kinds.all_kinds();
-                let mut categories: BTreeMap<String, Vec<&NodeTemplate>> = Default::default();
+                let mut categories: BTreeMap<String, Vec<NodeTemplate>> = Default::default();
                 let mut orphan_kinds = Vec::new();
 
-                for kind in &all_kinds {
+                for kind in all_kinds {
                     let kind_categories = kind.node_finder_categories(user_state);
 
                     if kind_categories.is_empty() {
                         orphan_kinds.push(kind);
                     } else {
                         for category in kind_categories {
-                            categories.entry(category.name()).or_default().push(kind);
+                            categories.entry(category.name()).or_default().push(kind.clone());
                         }
                     }
                 }

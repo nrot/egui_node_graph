@@ -109,7 +109,7 @@ where
     pub fn draw_graph_editor(
         &mut self,
         ui: &mut Ui,
-        all_kinds: impl NodeTemplateIter<Item = NodeTemplate>,
+        all_kinds: impl IntoIterator<Item = NodeTemplate>,
         user_state: &mut UserState,
         prepend_responses: Vec<NodeResponse<UserResponse, NodeData>>,
     ) -> GraphResponse<UserResponse, NodeData> {
@@ -559,8 +559,7 @@ where
                 responses.extend(
                     self.graph[self.node_id]
                         .user_data
-                        .top_bar_ui(ui, self.node_id, self.graph, user_state)
-                        .into_iter(),
+                        .top_bar_ui(ui, self.node_id, self.graph, user_state),
                 );
                 ui.add_space(8.0); // The size of the little cross icon
             });

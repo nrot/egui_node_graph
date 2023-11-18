@@ -1,6 +1,7 @@
 use std::{borrow::Cow, collections::HashMap};
 
-use eframe::egui::{self, DragValue, TextStyle};
+use eframe::{egui::{self, DragValue, TextStyle}};
+
 use egui_node_graph::*;
 
 // ========= First, define your user data types =============
@@ -68,7 +69,7 @@ impl MyValueType {
 /// NodeTemplate is a mechanism to define node templates. It's what the graph
 /// will display in the "new node" popup. The user code needs to tell the
 /// library how to convert a NodeTemplate into a Node.
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 #[cfg_attr(feature = "persistence", derive(serde::Serialize, serde::Deserialize))]
 pub enum MyNodeTemplate {
     MakeScalar,
@@ -103,7 +104,7 @@ pub struct MyGraphState {
 
 // A trait for the data types, to tell the library how to display them
 impl DataTypeTrait<MyGraphState> for MyDataType {
-    fn data_type_color(&self, _user_state: &mut MyGraphState) -> egui::Color32 {
+    fn data_type_color(&self, _user_state: &mut MyGraphState) -> ecolor::Color32 {
         match self {
             MyDataType::Scalar => egui::Color32::from_rgb(38, 109, 211),
             MyDataType::Vec2 => egui::Color32::from_rgb(238, 207, 109),
@@ -159,7 +160,7 @@ impl NodeTemplateTrait for MyNodeTemplate {
     }
 
     fn user_data(&self, _user_state: &mut Self::UserState) -> Self::NodeData {
-        MyNodeData { template: *self }
+        MyNodeData { template: self.clone() }
     }
 
     fn build_node(
@@ -285,10 +286,10 @@ impl WidgetValueTrait for MyValueType {
     fn value_widget(
         &mut self,
         param_name: &str,
-        _node_id: NodeId,
+        node_id: NodeId,
         ui: &mut egui::Ui,
-        _user_state: &mut MyGraphState,
-        _node_data: &MyNodeData,
+        user_state: &mut Self::UserState,
+        node_data: &Self::NodeData,
     ) -> Vec<MyResponse> {
         // This trait is used to tell the library which UI to display for the
         // inline parameter widgets.
@@ -419,7 +420,7 @@ impl eframe::App for NodeGraphExample {
             .show(ctx, |ui| {
                 self.state.draw_graph_editor(
                     ui,
-                    AllMyNodeTemplates,
+                    AllMyNodeTemplates.all_kinds(),
                     &mut self.user_state,
                     Vec::default(),
                 )
