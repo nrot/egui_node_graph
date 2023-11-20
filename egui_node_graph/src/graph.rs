@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+
 use super::*;
 
 #[cfg(feature = "persistence")]

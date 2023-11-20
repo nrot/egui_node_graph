@@ -87,11 +87,11 @@ impl<NodeData, DataType, ValueType, NodeTemplate, UserResponse, UserState, Categ
     GraphEditorState<NodeData, DataType, ValueType, NodeTemplate, UserState>
 where
     NodeData: NodeDataTrait<
-        Response = UserResponse,
-        UserState = UserState,
-        DataType = DataType,
-        ValueType = ValueType,
-    >,
+            Response = UserResponse,
+            UserState = UserState,
+            DataType = DataType,
+            ValueType = ValueType,
+        > + Clone,
     UserResponse: UserResponseTrait,
     ValueType:
         WidgetValueTrait<Response = UserResponse, UserState = UserState, NodeData = NodeData>,
@@ -187,7 +187,7 @@ where
                 node_finder_area = node_finder_area.current_pos(pos);
             }
             node_finder_area.show(ui.ctx(), |ui| {
-                if let Some(node_kind) = node_finder.show(ui, all_kinds, user_state) {
+                if let Some(mut node_kind) = node_finder.show(ui, all_kinds, user_state) {
                     let new_node = self.graph.add_node(
                         node_kind.node_graph_label(user_state),
                         node_kind.user_data(user_state),
@@ -465,11 +465,11 @@ impl<'a, NodeData, DataType, ValueType, UserResponse, UserState>
     GraphNodeWidget<'a, NodeData, DataType, ValueType>
 where
     NodeData: NodeDataTrait<
-        Response = UserResponse,
-        UserState = UserState,
-        DataType = DataType,
-        ValueType = ValueType,
-    >,
+            Response = UserResponse,
+            UserState = UserState,
+            DataType = DataType,
+            ValueType = ValueType,
+        > + Clone,
     UserResponse: UserResponseTrait,
     ValueType:
         WidgetValueTrait<Response = UserResponse, UserState = UserState, NodeData = NodeData>,
@@ -494,7 +494,7 @@ where
     /// Draws this node. Also fills in the list of port locations with all of its ports.
     /// Returns responses indicating multiple events.
     fn show_graph_node(
-        self,
+        mut self,
         ui: &mut Ui,
         user_state: &mut UserState,
     ) -> Vec<NodeResponse<UserResponse, NodeData>> {
@@ -556,11 +556,12 @@ where
                         .text_style(TextStyle::Button)
                         .color(text_color),
                 ));
-                responses.extend(
-                    self.graph[self.node_id]
-                        .user_data
-                        .top_bar_ui(ui, self.node_id, self.graph, user_state),
-                );
+                responses.extend(self.graph[self.node_id].user_data.top_bar_ui(
+                    ui,
+                    self.node_id,
+                    self.graph,
+                    user_state,
+                ));
                 ui.add_space(8.0); // The size of the little cross icon
             });
             ui.add_space(margin.y);
@@ -623,7 +624,14 @@ where
                 responses.extend(
                     self.graph[self.node_id]
                         .user_data
-                        .output_ui(ui, self.node_id, self.graph, user_state, &param_name, param_id)
+                        .output_ui(
+                            ui,
+                            self.node_id,
+                            self.graph,
+                            user_state,
+                            &param_name,
+                            param_id,
+                        )
                         .into_iter(),
                 );
 
@@ -639,11 +647,12 @@ where
                 output_port_heights.push((height_before + height_after) / 2.0);
             }
 
-            responses.extend(
-                self.graph[self.node_id]
-                    .user_data
-                    .bottom_ui(ui, self.node_id, self.graph, user_state),
-            );
+            responses.extend(self.graph[self.node_id].user_data.bottom_ui(
+                ui,
+                self.node_id,
+                self.graph,
+                user_state,
+            ));
         });
 
         // Second pass, iterate again to draw the ports. This happens outside
@@ -809,7 +818,7 @@ where
                     .unwrap_or_else(|| background_color.lighten(0.8)),
                 stroke: Stroke::NONE,
                 fill_texture_id: Default::default(),
-                uv: Rect::ZERO
+                uv: Rect::ZERO,
             });
 
             let body_rect = Rect::from_min_size(
@@ -822,7 +831,7 @@ where
                 fill: background_color,
                 stroke: Stroke::NONE,
                 fill_texture_id: Default::default(),
-                uv: Rect::ZERO
+                uv: Rect::ZERO,
             });
 
             let bottom_body_rect = Rect::from_min_size(
@@ -835,7 +844,7 @@ where
                 fill: background_color,
                 stroke: Stroke::NONE,
                 fill_texture_id: Default::default(),
-                uv: Rect::ZERO
+                uv: Rect::ZERO,
             });
 
             let node_rect = titlebar_rect.union(body_rect).union(bottom_body_rect);
@@ -846,7 +855,7 @@ where
                     fill: Color32::WHITE.lighten(0.8),
                     stroke: Stroke::NONE,
                     fill_texture_id: Default::default(),
-                    uv: Rect::ZERO
+                    uv: Rect::ZERO,
                 })
             } else {
                 Shape::Noop
@@ -892,6 +901,16 @@ where
             responses.push(NodeResponse::SelectNode(self.node_id));
             responses.push(NodeResponse::RaiseNode(self.node_id));
         }
+        if self.graph[self.node_id].user_data.need_change_graph(
+            self.node_id,
+            self.graph,
+            user_state,
+        ) {
+            let old = self.graph[self.node_id].user_data.clone();
+
+            self.graph[self.node_id].user_data =
+                old.change_graph(self.node_id, self.graph, user_state);
+        };
 
         responses
     }

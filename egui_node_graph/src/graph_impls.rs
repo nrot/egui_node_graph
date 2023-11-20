@@ -152,6 +152,32 @@ impl<NodeData, DataType, ValueType> Graph<NodeData, DataType, ValueType> {
     pub fn get_output(&self, output: OutputId) -> &OutputParam<DataType> {
         &self.outputs[output]
     }
+
+    pub fn try_get_mut_input(&mut self, input: InputId)->Option<&mut InputParam<DataType, ValueType>>{
+        self.inputs.get_mut(input)
+    }
+
+    pub fn try_get_mut_output(&mut self, output: OutputId)->Option<&mut OutputParam<DataType>>{
+        self.outputs.get_mut(output)
+    }
+
+    pub fn rename_input(&mut self, node_id: NodeId, input: InputId, new_name: String)->bool{
+        self.nodes[node_id].inputs.iter_mut().find(|(_, id)|{
+            *id == input
+        }).map(|(name, _)| {
+            *name = new_name;
+            Some(())
+        }).is_some()
+    }
+
+    pub fn rename_ouput(&mut self, node_id: NodeId, output: OutputId, new_name: String)->bool{
+        self.nodes[node_id].outputs.iter_mut().find(|(_, id)|{
+            *id == output
+        }).map(|(name, _)| {
+            *name = new_name;
+            Some(())
+        }).is_some()
+    }
 }
 
 impl<NodeData, DataType, ValueType> Default for Graph<NodeData, DataType, ValueType> {

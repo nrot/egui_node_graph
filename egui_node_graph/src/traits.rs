@@ -137,7 +137,7 @@ where
         _graph: &Graph<Self, Self::DataType, Self::ValueType>,
         _user_state: &mut Self::UserState,
         param_name: &str,
-        _param_id: OutputId
+        _param_id: OutputId,
     ) -> Vec<NodeResponse<Self::Response, Self>>
     where
         Self::Response: UserResponseTrait,
@@ -184,6 +184,24 @@ where
         _user_state: &mut Self::UserState,
     ) -> bool {
         true
+    }
+
+    fn need_change_graph(
+        &self,
+        _node_id: NodeId,
+        _graph: &Graph<Self, Self::DataType, Self::ValueType>,
+        _user_state: &mut Self::UserState,
+    ) -> bool {
+        false
+    }
+
+    fn change_graph(
+        self,
+        _node_id: NodeId,
+        _graph: &mut Graph<Self, Self::DataType, Self::ValueType>,
+        _user_state: &mut Self::UserState,
+    ) -> Self {
+        self
     }
 }
 
@@ -273,7 +291,7 @@ pub trait NodeTemplateTrait: Clone {
     /// node will be empty by default, and this function can be used to fill its
     /// parameters.
     fn build_node(
-        &self,
+        &mut self,
         graph: &mut Graph<Self::NodeData, Self::DataType, Self::ValueType>,
         user_state: &mut Self::UserState,
         node_id: NodeId,
