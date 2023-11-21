@@ -1,6 +1,6 @@
-use std::{borrow::Cow, collections::HashMap};
+use std::{borrow::Cow, cell::RefCell, collections::HashMap};
 
-use eframe::{egui::{self, DragValue, TextStyle}};
+use eframe::egui::{self, DragValue, TextStyle};
 
 use egui_node_graph::*;
 
@@ -161,7 +161,9 @@ impl NodeTemplateTrait for MyNodeTemplate {
     }
 
     fn user_data(&self, _user_state: &mut Self::UserState) -> Self::NodeData {
-        MyNodeData { template: self.clone() }
+        MyNodeData {
+            template: self.clone(),
+        }
     }
 
     fn build_node(
@@ -417,11 +419,16 @@ impl eframe::App for NodeGraphExample {
                 egui::widgets::global_dark_light_mode_switch(ui);
             });
         });
+        let all_kinds: Vec<_> = AllMyNodeTemplates
+            .all_kinds()
+            .into_iter()
+            .map(|v| RefCell::new(v))
+            .collect();
         let graph_response = egui::CentralPanel::default()
             .show(ctx, |ui| {
                 self.state.draw_graph_editor(
                     ui,
-                    AllMyNodeTemplates.all_kinds(),
+                    all_kinds.iter().map(|v| v.borrow()),
                     &mut self.user_state,
                     Vec::default(),
                 )

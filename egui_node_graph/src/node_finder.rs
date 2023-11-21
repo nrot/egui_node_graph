@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, marker::PhantomData};
+use std::{collections::BTreeMap, marker::PhantomData, cell::Ref};
 
 use crate::{color_hex_utils::*, CategoryTrait, NodeTemplateIter, NodeTemplateTrait};
 
@@ -14,10 +14,10 @@ pub struct NodeFinder<NodeTemplate> {
     _phantom: PhantomData<NodeTemplate>,
 }
 
-impl<NodeTemplate, NodeData, UserState, CategoryType> NodeFinder<NodeTemplate>
+impl<'a, NodeTemplate, NodeData, UserState, CategoryType> NodeFinder<NodeTemplate>
 where
     NodeTemplate:
-        NodeTemplateTrait<NodeData = NodeData, UserState = UserState, CategoryType = CategoryType>,
+        NodeTemplateTrait<NodeData = NodeData, UserState = UserState, CategoryType = CategoryType> + 'a,
     CategoryType: CategoryTrait,
 {
     pub fn new_at(pos: Pos2) -> Self {
@@ -35,7 +35,7 @@ where
     pub fn show(
         &mut self,
         ui: &mut Ui,
-        all_kinds: impl IntoIterator<Item = NodeTemplate>,
+        all_kinds: impl IntoIterator<Item = Ref<'a, NodeTemplate>>,
         user_state: &mut UserState,
     ) -> Option<NodeTemplate> {
         let background_color;

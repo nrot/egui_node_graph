@@ -1,3 +1,4 @@
+use std::cell::Ref;
 use std::collections::HashSet;
 
 use crate::color_hex_utils::*;
@@ -83,7 +84,7 @@ pub struct GraphNodeWidget<'a, NodeData, DataType, ValueType> {
     pub pan: egui::Vec2,
 }
 
-impl<NodeData, DataType, ValueType, NodeTemplate, UserResponse, UserState, CategoryType>
+impl<'a, NodeData, DataType, ValueType, NodeTemplate, UserResponse, UserState, CategoryType>
     GraphEditorState<NodeData, DataType, ValueType, NodeTemplate, UserState>
 where
     NodeData: NodeDataTrait<
@@ -101,7 +102,7 @@ where
         ValueType = ValueType,
         UserState = UserState,
         CategoryType = CategoryType,
-    >,
+    > + 'a,
     DataType: DataTypeTrait<UserState>,
     CategoryType: CategoryTrait,
 {
@@ -109,7 +110,7 @@ where
     pub fn draw_graph_editor(
         &mut self,
         ui: &mut Ui,
-        all_kinds: impl IntoIterator<Item = NodeTemplate>,
+        all_kinds: impl IntoIterator<Item = Ref<'a, NodeTemplate>>,
         user_state: &mut UserState,
         prepend_responses: Vec<NodeResponse<UserResponse, NodeData>>,
     ) -> GraphResponse<UserResponse, NodeData> {
