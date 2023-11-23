@@ -908,9 +908,7 @@ where
             user_state,
         ) {
             let old = self.graph[self.node_id].user_data.clone();
-
-            self.graph[self.node_id].user_data =
-                old.change_graph(self.node_id, self.graph, user_state);
+            old.change_graph(self.node_id, self.graph, user_state);
         };
 
         responses

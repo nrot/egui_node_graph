@@ -200,8 +200,7 @@ where
         _node_id: NodeId,
         _graph: &mut Graph<Self, Self::DataType, Self::ValueType>,
         _user_state: &mut Self::UserState,
-    ) -> Self {
-        self
+    ) {
     }
 }
 
